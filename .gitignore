@@ -2,7 +2,9 @@
 dataset.jsonl
 /0*
 /[0-9]*
-
+/lvmtest/[0-9][0-9][0-9]*
+/lvmtest/logs
+/lvmtest/hfcache
 /hfcache
 /output
 /wandb
