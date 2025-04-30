@@ -1,7 +1,8 @@
-/.lvmenv
+.lvmenv
+dataset.jsonl
 /0*
 /[0-9]*
-/dataset.jsonl
+
 /hfcache
 /output
 /wandb
