@@ -29,7 +29,7 @@ FLAGS, FLAGS_DEF = mlxu.define_flags_with_default(
     seed=42,
     mesh_dim='1,-1,1',
     dtype='fp32',
-    total_steps=10000,
+    total_steps=10,
     load_llama_config='',
     update_llama_config='',
     load_checkpoint='',
@@ -63,6 +63,7 @@ def main(argv):
     set_random_seed(FLAGS.seed)
 
     tokenizer = LLaMAConfig.get_tokenizer(FLAGS.tokenizer)
+    # Dataset
     dataset = DatasetFactory.load_dataset(
         FLAGS.train_dataset, tokenizer, device_count=jax.device_count()
     )
@@ -154,6 +155,7 @@ def main(argv):
         return rng_generator(), metrics
 
     train_state_shapes = jax.eval_shape(init_fn, next_rng())
+    #print(f"Train state shapes {train_state_shapes}")
     train_state_partition = match_partition_rules(
         LLaMAConfig.get_partition_rules(), train_state_shapes
     )
@@ -213,6 +215,8 @@ def main(argv):
     with mesh:
         train_state, restored_params = None, None
         if FLAGS.load_checkpoint != '':
+            #print(f"Train state shapes : {train_state_shapes}")
+            #print(f"Shards : {shard_fns}")
             train_state, restored_params = checkpointer.load_trainstate_checkpoint(
                 FLAGS.load_checkpoint, train_state_shapes, shard_fns
             )

@@ -53,6 +53,14 @@ def match_keywords(string, positives, negatives):
             return False
     return True
 
+def read_json(path):
+    with open(path, "r") as f:
+        return json.load(f)
+
+
+def write_json(text, path):
+    with open(path, "w") as f:
+        json.dump(text, f)
 
 def load_and_convert_checkpoint(path):
     _, flax_params = StreamingCheckpointer.load_trainstate_checkpoint(path)
@@ -65,17 +73,6 @@ def load_and_convert_checkpoint(path):
             float_tensor_to_dtype(tensor, 'fp32'), dtype=torch.float16
         )
     return torch_params
-
-
-def read_json(path):
-    with open(path, "r") as f:
-        return json.load(f)
-
-
-def write_json(text, path):
-    with open(path, "w") as f:
-        json.dump(text, f)
-
 
 def write_model(loaded, model_path, model_size):
     os.makedirs(model_path, exist_ok=True)

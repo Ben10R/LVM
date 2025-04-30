@@ -40,6 +40,7 @@ class DatasetFactory(object):
                 config.huggingface_dataset, tokenizer, text_processor, **kwargs
             )
         elif config.type == 'json':
+            #print("LOADING JSON DATASET")
             return JsonDataset(config.json_dataset, tokenizer, text_processor, **kwargs)
         else:
             raise ValueError(f'Unknown dataset type: {config.type}')
@@ -63,6 +64,7 @@ class TextProcessor(object):
         config.base64_token_dtype = 'i4'
         if updates is not None:
             config.update(ConfigDict(updates).copy_and_resolve_references())
+        #print(f"TextProcessor config : {config}")
         return config
 
     def __init__(self, config, tokenizer):
@@ -73,6 +75,7 @@ class TextProcessor(object):
         self.tokenizer = tokenizer
 
     def __call__(self, example, has_aux=False):
+        
         if has_aux:
             example, *aux = example
         else:
@@ -88,7 +91,9 @@ class TextProcessor(object):
             fields = example[self.config.fields_from_example].split(',')
         else:
             fields = self.config.fields.split(',')
-
+        # DEBUG
+        # print(f"EXAMPLE : {example}")
+        # print(f"Fields : {fields}")
         for i, field in enumerate(fields):
             if field.startswith('[') and field.endswith(']'):
                 # No loss for this field.
@@ -118,12 +123,16 @@ class TextProcessor(object):
                 token_buffer.extend(tokens)
                 loss_mask_buffer.extend([mask for _ in range(len(tokens))])
             else:
+                #print(f"TextProcessor subfield split : +")
                 subfields = field.split('+')
+                #print(f"SUBFIELDS : {subfields}")
                 text = self.config.subfield_separator.join(
                     [example[subfield] for subfield in subfields]
                 )
                 if i == 0:
                     text = self.config.prepend_text + text
+
+                #print(f"Text at iteration {i} : {text}")
                 tokens = self.tokenizer.encode(text)
                 token_buffer.extend(tokens)
                 loss_mask_buffer.extend([mask for _ in range(len(tokens))])
@@ -249,6 +258,7 @@ class JsonDataset(object):
 
         if updates is not None:
             config.update(ConfigDict(updates).copy_and_resolve_references())
+        #print(f"JsonDataset config : {config}")
         return config
 
     def __init__(self, config, tokenizer, text_processor, device_count=None):
@@ -266,6 +276,7 @@ class JsonDataset(object):
             return None
         try:
             data = json.loads(line)
+            #print("JSON loaded correctly")
         except json.decoder.JSONDecodeError:
             print(f'Error parsing json line:\n{line}')
             return None
@@ -284,7 +295,7 @@ class JsonDataset(object):
 
                 data = self.parse_json(line)
                 if data is not None:
-                    # JSON parsing succeeded
+                    #print("JSON parsing succeeded")
                     yield data, self._file_loc, self._index
                 self._index += 1
 
